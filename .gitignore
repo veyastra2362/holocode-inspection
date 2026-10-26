@@ -7,6 +7,9 @@ web/node_modules/
 node_modules/
 *.tsbuildinfo
 
+docs/unity-verification/bin/
+docs/unity-verification/obj/
+
 # ---- 运行时数据 ----
 data/
 backend/data/
@@ -55,4 +58,5 @@ desktop.ini
 !unity/Packages/
 !unity/Packages/manifest.json
 !unity/ProjectSettings/
+
 
