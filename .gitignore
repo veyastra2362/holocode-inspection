@@ -30,8 +30,9 @@ unity/Builds/
 unity/UserSettings/
 unity/MemoryCaptures/
 unity/Recordings/
-*.csproj
-*.sln
+# Unity 自动生成的 .csproj/.sln 在工程根，忽略；docs 下的验证工具需要入库
+/unity/*.csproj
+/unity/*.sln
 *.user
 *.pidb
 *.booproj
@@ -54,3 +55,4 @@ desktop.ini
 !unity/Packages/
 !unity/Packages/manifest.json
 !unity/ProjectSettings/
+
