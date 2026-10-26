@@ -260,6 +260,69 @@
 
 ---
 
+## P-013
+
+- 目标：在用户装好 Unity 之后，把工程真正导入 Unity 6.6、跑测试，替换掉此前“只能靠桩验证”的状态。
+
+### Prompt 原文
+
+> unity已安装。
+
+### 结果
+
+- **环境确认**：`C:\Program Files\Unity\Hub\Editor\6000.6.7f1\Editor\Unity.exe`，
+  即 **Unity 6000.6.7f1（Unity 6.6）**，与我原先写的 2022.3 LTS 不同。我用批处理模式导入：
+  `Unity.exe -batchmode -nographics -quit -projectPath unity -accept-apiupdate`。
+- **报错 1：`error CS0103: The name 'ScreenCapture' does not exist`**。
+  原因是我手写的 `Packages/manifest.json` 里**漏了 `com.unity.modules.screencapture`**，
+  该模块（连同它依赖的 `imageconversion`）根本没被加载，程序集不存在。
+  → **修改后采用**：补上两个模块依赖，并在 asmdef 里声明对应程序集引用。
+  之后 **0 error / 0 warning**。
+- **同时修掉的废弃 API**：`FindObjectOfType<T>()` 在 Unity 6 已废弃，
+  改为 `FindAnyObjectByType<T>()`（不再产生 warning）。
+- **报错 2：Unity Test Runner 跑出 35/46，11 个失败**。
+  这不是桩问题，而是**真实 Unity 环境才暴露的问题**：
+  - `Core: Destroy may not be called from edit mode!` —— 编辑模式（含 EditMode 测试）里
+    `Object.Destroy()` 会报错且**实际不销毁**，导致标记的 Collider 没被移除、标记也没真正删除；
+  - 两个 `[Test]` 里调用了会 `StartCoroutine` 的 `Submit()`，而 EditMode 没有帧循环，协程不推进，
+    断言在回调前就执行了。
+  → **修改后采用**：
+    1. 新增 `ObjectUtil.SafeDestroy()`：`Application.isPlaying` 为假时用 `DestroyImmediate`，
+       运行时仍用 `Destroy`；
+    2. 两个用例改为 `[UnityTest] + yield return null`。
+  → 结果：**46 / 46 全部通过**。
+- **我的判断**：这一步证明了第 P-010 条里 .NET 桩的价值（抓到了 2 个真实缺陷），
+  也证明了它的**局限**——`.Destroy` 与协程时机这两类问题必须有真实 Unity 才能发现。
+  因此我把 README 第 7 节的表述从“未经编辑器验证”改写为现在的“已用 Unity 6.6 验证 + 列出验证方式”。
+- **验证**：
+  - 编译：0 error / 0 warning；
+  - EditMode：`docs/test-output/unity-editmode-results.xml`（total=46, passed=46, failed=0）；
+  - 场景自检：`docs/test-output/unity-scene-selftest.txt`（8/8 通过，
+    含真实 `Physics.Raycast` 命中点与标记坐标误差 < 1e-8）；
+  - 渲染实拍：`docs/unity-scene-preview.png`（1280×720，从 `Camera.Render()` 读回像素）。
+
+---
+
+## P-014
+
+- 目标：确认渲染出来的画面不是空白/纯色（我无法直接看图，必须用代码验证）。
+
+### Prompt 原文
+
+> （我主动要求：不要只贴一张图就说“渲染正常”，要用代码检查像素）
+
+### 结果
+
+- **采用**：对 PNG 做像素统计：1280×720 共 12 种主要色块，
+  含机房地面/墙面配色、机柜暖色、灯光高光，以及 **255 个偏红像素**（高优先级标记）。
+  单一颜色小于等于 2 种则判定为渲染失败——本次不成立。
+- **发现的坑**：自检脚本第一次访问后端时用同步循环驱动 `UnityWebRequest` 协程，
+  得到 `请求未完成`。原因同上——`AsyncOperation` 要跨帧完成。
+  → **修改后采用**：自检里改用同步 HTTP 旁路验证后端可达性，
+  并在代码注释里写明原因，避免下一个人重复踩坑。
+
+---
+
 ## 汇总：我对 AI 结果的处置
 
 | 编号 | 结果 | 说明 |
@@ -271,6 +334,8 @@
 | P-009 | 否定 | 自动建场景工具无法验证，改为运行时程序化生成场景 |
 | P-010 | 修改后采用 | 编译器/桩抓到 2 个真实缺陷（`GameObject`→`MonoBehaviour`、`IReadOnlyList.Any`） |
 | P-012 | 修正 | 删掉无法证实的测试数量，改为核对后的准确数字 |
+| P-013 | 修改后采用 | 手写 manifest 漏模块导致编译失败；`Destroy` 需区分编辑/运行模式；协程测试需 `[UnityTest]` |
+| P-014 | 修改后采用 | 自检里误用同步循环驱动 `UnityWebRequest`，改为同步 HTTP 旁路 |
 
 ---
 
@@ -291,3 +356,5 @@
 11. `写 README（版本/启动/接口/必做项对照/AR 三问/已知问题/录屏脚本）与本文件`
 12. `写一键启动脚本 start.bat / start.sh 并从干净状态验证`
 13. `清理临时文件、检查 .gitignore，提交完整 Git 历史`
+14. `unity已安装。`（随后在 Unity 6.6 中导入、编译、跑 EditMode 测试与场景自检，见 P-013/P-014）
+

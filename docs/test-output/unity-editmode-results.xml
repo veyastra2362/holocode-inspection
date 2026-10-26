@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="46" result="Passed" total="46" passed="46" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.1400322">
+  <test-suite type="TestSuite" id="1000" name="InspectionDemo" fullname="InspectionDemo" runstate="Runnable" testcasecount="46" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.140032" total="46" passed="46" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1058" name="Inspection.Tests.EditMode.dll" fullname="D:/Code/面试/holocode-inspection/unity/Library/ScriptAssemblies/Inspection.Tests.EditMode.dll" runstate="Runnable" testcasecount="46" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.129727" total="46" passed="46" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="38856" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1059" name="Inspection" fullname="Inspection" runstate="Runnable" testcasecount="46" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.128907" total="46" passed="46" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1060" name="Tests" fullname="Inspection.Tests" runstate="Runnable" testcasecount="46" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.128329" total="46" passed="46" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1034" name="BaseUrlTests" fullname="Inspection.Tests.BaseUrlTests" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.030486" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="ParameterizedMethod" id="1041" name="Normalizes" fullname="Inspection.Tests.BaseUrlTests.Normalizes" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.025894" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1035" name="Normalizes(null,&quot;http://localhost:8080&quot;)" fullname="Inspection.Tests.BaseUrlTests.Normalizes(null,&quot;http://localhost:8080&quot;)" methodname="Normalizes" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" seed="634555198" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.012915" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1036" name="Normalizes(&quot;&quot;,&quot;http://localhost:8080&quot;)" fullname="Inspection.Tests.BaseUrlTests.Normalizes(&quot;&quot;,&quot;http://localhost:8080&quot;)" methodname="Normalizes" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" seed="1771868269" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000153" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1037" name="Normalizes(&quot;   &quot;,&quot;http://localhost:8080&quot;)" fullname="Inspection.Tests.BaseUrlTests.Normalizes(&quot;   &quot;,&quot;http://localhost:8080&quot;)" methodname="Normalizes" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" seed="99507439" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000049" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1038" name="Normalizes(&quot;192.168.1.10:8080&quot;,&quot;http://192.168.1.10:8080&quot;)" fullname="Inspection.Tests.BaseUrlTests.Normalizes(&quot;192.168.1.10:8080&quot;,&quot;http://192.168.1.10:8080&quot;)" methodname="Normalizes" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" seed="1748653960" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000060" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1039" name="Normalizes(&quot;http://localhost:8080/&quot;,&quot;http://localhost:8080&quot;)" fullname="Inspection.Tests.BaseUrlTests.Normalizes(&quot;http://localhost:8080/&quot;,&quot;http://localhost:8080&quot;)" methodname="Normalizes" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" seed="947836309" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000045" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1040" name="Normalizes(&quot; https://api.example.com// &quot;,&quot;https://api.example.com&quot;)" fullname="Inspection.Tests.BaseUrlTests.Normalizes(&quot; https://api.example.com// &quot;,&quot;https://api.example.com&quot;)" methodname="Normalizes" classname="Inspection.Tests.BaseUrlTests" runstate="Runnable" seed="195589891" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000044" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestFixture" id="1029" name="EnumTests" fullname="Inspection.Tests.EnumTests" classname="Inspection.Tests.EnumTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.008706" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1032" name="ParsesCaseInsensitively" fullname="Inspection.Tests.EnumTests.ParsesCaseInsensitively" methodname="ParsesCaseInsensitively" classname="Inspection.Tests.EnumTests" runstate="Runnable" seed="245267433" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.002220" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1033" name="PositionDataRoundTrips" fullname="Inspection.Tests.EnumTests.PositionDataRoundTrips" methodname="PositionDataRoundTrips" classname="Inspection.Tests.EnumTests" runstate="Runnable" seed="559694067" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.004213" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1030" name="PriorityWireFormatMatchesBackend" fullname="Inspection.Tests.EnumTests.PriorityWireFormatMatchesBackend" methodname="PriorityWireFormatMatchesBackend" classname="Inspection.Tests.EnumTests" runstate="Runnable" seed="414449524" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000309" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1031" name="StatusWireFormatMatchesBackend" fullname="Inspection.Tests.EnumTests.StatusWireFormatMatchesBackend" methodname="StatusWireFormatMatchesBackend" classname="Inspection.Tests.EnumTests" runstate="Runnable" seed="34120974" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000177" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1010" name="EnvelopeTests" fullname="Inspection.Tests.EnvelopeTests" classname="Inspection.Tests.EnvelopeTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.005008" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1013" name="NullOrGarbageReturnsNull" fullname="Inspection.Tests.EnvelopeTests.NullOrGarbageReturnsNull" methodname="NullOrGarbageReturnsNull" classname="Inspection.Tests.EnvelopeTests" runstate="Runnable" seed="1857750895" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000803" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="ParsesErrorEnvelope" fullname="Inspection.Tests.EnvelopeTests.ParsesErrorEnvelope" methodname="ParsesErrorEnvelope" classname="Inspection.Tests.EnvelopeTests" runstate="Runnable" seed="1255455068" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.002919" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="ParsesSuccessEnvelope" fullname="Inspection.Tests.EnvelopeTests.ParsesSuccessEnvelope" methodname="ParsesSuccessEnvelope" classname="Inspection.Tests.EnvelopeTests" runstate="Runnable" seed="1952971220" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000238" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1024" name="IsoTimeTests" fullname="Inspection.Tests.IsoTimeTests" classname="Inspection.Tests.IsoTimeTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.013418" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1028" name="GarbageFallsBackGracefully" fullname="Inspection.Tests.IsoTimeTests.GarbageFallsBackGracefully" methodname="GarbageFallsBackGracefully" classname="Inspection.Tests.IsoTimeTests" runstate="Runnable" seed="639868621" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000712" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1027" name="HandlesPositiveOffset" fullname="Inspection.Tests.IsoTimeTests.HandlesPositiveOffset" methodname="HandlesPositiveOffset" classname="Inspection.Tests.IsoTimeTests" runstate="Runnable" seed="630023055" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.009417" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1025" name="ParsesUtcWithFraction" fullname="Inspection.Tests.IsoTimeTests.ParsesUtcWithFraction" methodname="ParsesUtcWithFraction" classname="Inspection.Tests.IsoTimeTests" runstate="Runnable" seed="363942911" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001516" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1026" name="ParsesUtcWithoutFraction" fullname="Inspection.Tests.IsoTimeTests.ParsesUtcWithoutFraction" methodname="ParsesUtcWithoutFraction" classname="Inspection.Tests.IsoTimeTests" runstate="Runnable" seed="703260181" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000443" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1001" name="JsonScanTests" fullname="Inspection.Tests.JsonScanTests" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.002392" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1004" name="ExtractsArrayValue" fullname="Inspection.Tests.JsonScanTests.ExtractsArrayValue" methodname="ExtractsArrayValue" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="930464412" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000230" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="ExtractsObjectValue" fullname="Inspection.Tests.JsonScanTests.ExtractsObjectValue" methodname="ExtractsObjectValue" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="1274464314" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000122" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="ExtractsStringValue" fullname="Inspection.Tests.JsonScanTests.ExtractsStringValue" methodname="ExtractsStringValue" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="93827439" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000106" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="HandlesBracesInsideStrings" fullname="Inspection.Tests.JsonScanTests.HandlesBracesInsideStrings" methodname="HandlesBracesInsideStrings" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="455799190" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000094" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="HandlesWhitespaceAroundColon" fullname="Inspection.Tests.JsonScanTests.HandlesWhitespaceAroundColon" methodname="HandlesWhitespaceAroundColon" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="670203355" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000101" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="IgnoresNestedKeyWithSameName" fullname="Inspection.Tests.JsonScanTests.IgnoresNestedKeyWithSameName" methodname="IgnoresNestedKeyWithSameName" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="1872978869" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000093" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="ReturnsNullForMissingKey" fullname="Inspection.Tests.JsonScanTests.ReturnsNullForMissingKey" methodname="ReturnsNullForMissingKey" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="1526287441" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000110" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="UnclosedBracketReturnsNull" fullname="Inspection.Tests.JsonScanTests.UnclosedBracketReturnsNull" methodname="UnclosedBracketReturnsNull" classname="Inspection.Tests.JsonScanTests" runstate="Runnable" seed="526034296" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000087" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1019" name="JsonStringTests" fullname="Inspection.Tests.JsonStringTests" classname="Inspection.Tests.JsonStringTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001763" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1023" name="FindStringEndSkipsEscapedQuotes" fullname="Inspection.Tests.JsonStringTests.FindStringEndSkipsEscapedQuotes" methodname="FindStringEndSkipsEscapedQuotes" classname="Inspection.Tests.JsonStringTests" runstate="Runnable" seed="1981448223" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000181" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1022" name="ReturnsInputWhenNotQuoted" fullname="Inspection.Tests.JsonStringTests.ReturnsInputWhenNotQuoted" methodname="ReturnsInputWhenNotQuoted" classname="Inspection.Tests.JsonStringTests" runstate="Runnable" seed="208223863" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000128" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1021" name="UnescapesNewlineAndUnicode" fullname="Inspection.Tests.JsonStringTests.UnescapesNewlineAndUnicode" methodname="UnescapesNewlineAndUnicode" classname="Inspection.Tests.JsonStringTests" runstate="Runnable" seed="1238248998" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000414" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1020" name="UnescapesQuotesAndBackslashes" fullname="Inspection.Tests.JsonStringTests.UnescapesQuotesAndBackslashes" methodname="UnescapesQuotesAndBackslashes" classname="Inspection.Tests.JsonStringTests" runstate="Runnable" seed="384638942" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000107" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1014" name="ParseArrayTests" fullname="Inspection.Tests.ParseArrayTests" classname="Inspection.Tests.ParseArrayTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.003109" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1016" name="EmptyArrayIsOk" fullname="Inspection.Tests.ParseArrayTests.EmptyArrayIsOk" methodname="EmptyArrayIsOk" classname="Inspection.Tests.ParseArrayTests" runstate="Runnable" seed="1000814103" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001074" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="NonArrayDataFails" fullname="Inspection.Tests.ParseArrayTests.NonArrayDataFails" methodname="NonArrayDataFails" classname="Inspection.Tests.ParseArrayTests" runstate="Runnable" seed="604083615" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000273" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="ParseIssueRequiresId" fullname="Inspection.Tests.ParseArrayTests.ParseIssueRequiresId" methodname="ParseIssueRequiresId" classname="Inspection.Tests.ParseArrayTests" runstate="Runnable" seed="1032450906" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000430" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="ParsesIssueArray" fullname="Inspection.Tests.ParseArrayTests.ParsesIssueArray" methodname="ParsesIssueArray" classname="Inspection.Tests.ParseArrayTests" runstate="Runnable" seed="1418428342" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000350" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1045" name="PlacementControllerTests" fullname="Inspection.Tests.PlacementControllerTests" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.045648" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1048" name="CancelRemovesPendingMarker" fullname="Inspection.Tests.PlacementControllerTests.CancelRemovesPendingMarker" methodname="CancelRemovesPendingMarker" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="2066668756" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.014611" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1051" name="FailedSubmitKeepsMarkerAndReportsError" fullname="Inspection.Tests.PlacementControllerTests.FailedSubmitKeepsMarkerAndReportsError" methodname="FailedSubmitKeepsMarkerAndReportsError" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="2051590662" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.011022" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1046" name="FirstClickCreatesOnePendingMarker" fullname="Inspection.Tests.PlacementControllerTests.FirstClickCreatesOnePendingMarker" methodname="FirstClickCreatesOnePendingMarker" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="397353859" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001167" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1054" name="PriorityAffectsMarkerColor" fullname="Inspection.Tests.PlacementControllerTests.PriorityAffectsMarkerColor" methodname="PriorityAffectsMarkerColor" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="1002944685" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.004050" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1053" name="RestoreMarkersIsIdempotent" fullname="Inspection.Tests.PlacementControllerTests.RestoreMarkersIsIdempotent" methodname="RestoreMarkersIsIdempotent" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="72756394" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001797" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="RestoreMarkersSkipsOutOfSceneCoordinates" fullname="Inspection.Tests.PlacementControllerTests.RestoreMarkersSkipsOutOfSceneCoordinates" methodname="RestoreMarkersSkipsOutOfSceneCoordinates" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="1809397910" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000729" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="SecondClickDoesNotCreateAnotherPendingMarker" fullname="Inspection.Tests.PlacementControllerTests.SecondClickDoesNotCreateAnotherPendingMarker" methodname="SecondClickDoesNotCreateAnotherPendingMarker" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="224915544" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001420" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="SubmitWithEmptyTitleIsRejectedBeforeCallingBackend" fullname="Inspection.Tests.PlacementControllerTests.SubmitWithEmptyTitleIsRejectedBeforeCallingBackend" methodname="SubmitWithEmptyTitleIsRejectedBeforeCallingBackend" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="805333433" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001177" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1050" name="SuccessfulSubmitKeepsMarkerAndSendsExactPosition" fullname="Inspection.Tests.PlacementControllerTests.SuccessfulSubmitKeepsMarkerAndSendsExactPosition" methodname="SuccessfulSubmitKeepsMarkerAndSendsExactPosition" classname="Inspection.Tests.PlacementControllerTests" runstate="Runnable" seed="1039277253" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.003808" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1042" name="SceneBoundsTests" fullname="Inspection.Tests.SceneBoundsTests" classname="Inspection.Tests.SceneBoundsTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.001823" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1043" name="AcceptsCoordinatesInsideRoom" fullname="Inspection.Tests.SceneBoundsTests.AcceptsCoordinatesInsideRoom" methodname="AcceptsCoordinatesInsideRoom" classname="Inspection.Tests.SceneBoundsTests" runstate="Runnable" seed="431779035" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000423" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1044" name="RejectsFarAwayCoordinates" fullname="Inspection.Tests.SceneBoundsTests.RejectsFarAwayCoordinates" methodname="RejectsFarAwayCoordinates" classname="Inspection.Tests.SceneBoundsTests" runstate="Runnable" seed="709094189" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.000375" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1055" name="SceneComposerTests" fullname="Inspection.Tests.SceneComposerTests" classname="Inspection.Tests.SceneComposerTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.013944" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1057" name="EverySurfaceHasCollider" fullname="Inspection.Tests.SceneComposerTests.EverySurfaceHasCollider" methodname="EverySurfaceHasCollider" classname="Inspection.Tests.SceneComposerTests" runstate="Runnable" seed="1060436605" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.009031" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[SceneComposer] 场景构建完成，可点击表面 29 个
+]]></output>
+            </test-case>
+            <test-case id="1056" name="SceneHasAtLeastTwoClickableSurfaces" fullname="Inspection.Tests.SceneComposerTests.SceneHasAtLeastTwoClickableSurfaces" methodname="SceneHasAtLeastTwoClickableSurfaces" classname="Inspection.Tests.SceneComposerTests" runstate="Runnable" seed="1050168865" result="Passed" start-time="2026-10-26 07:59:57Z" end-time="2026-10-26 07:59:57Z" duration="0.003993" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[SceneComposer] 场景构建完成，可点击表面 29 个
+Saving results to: D:\Code\面试\holocode-inspection\.build\editmode-results3.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

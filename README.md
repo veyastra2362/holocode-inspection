@@ -15,8 +15,8 @@ Unity (C#)  ──POST /api/issues──►  Go (SQLite)  ◄──GET/PATCH─�
 
 | 部分 | 版本 | 说明 |
 | --- | --- | --- |
-| Unity | **2022.3 LTS**（`ProjectVersion.txt` 中为 `2022.3.62f1`） | 任意 2022.3.x / 2023.x LTS 均可打开；使用 **旧版 Input Manager**（`activeInputHandler: 0`），无需 Input System 包 |
-| C# | .NET Standard 2.1（Unity 2022.3 默认） | 不使用 C# 9+ 语法，兼容 Unity 的编译器约束 |
+| Unity | **6000.6 LTS（Unity 6.6）**，`ProjectVersion.txt` 为 `6000.6.7f1` | 在 Unity 6.6 中实际导入、编译、跑测试；使用 **旧版 Input Manager**（`activeInputHandler: 0`），无需 Input System 包 |
+| C# | .NET Standard 2.1（Unity 默认） | 不使用 C# 9+ 语法，兼容 Unity 的编译器约束 |
 | Go | **1.21+**（开发验证用 1.27.3） | 标准库 `net/http` + `modernc.org/sqlite`（纯 Go，**无需 CGO/gcc**） |
 | SQLite | 内嵌于 `modernc.org/sqlite` v1.61 | 单文件数据库，无需安装数据库服务 |
 | Node.js | **18+**（开发用 24.14） | 仅构建/开发用 |
@@ -61,9 +61,10 @@ npm run dev                   # http://localhost:5173
 
 ### 2.3 Unity 客户端
 
-1. 用 Unity Hub 打开 `unity/` 目录（**2022.3 LTS**）。
+1. 用 Unity Hub 打开 `unity/` 目录（**Unity 6.6 LTS**；本项目在 `6000.6.7f1` 上验证）。
 2. 打开场景 `Assets/Scenes/Inspection.unity`，点 **Play**。
 3. 顶部会显示后端连通状态；连不上时左下角会变红并给出提示。
+4. 菜单 **Inspection → 运行场景自检**（快捷键 `Ctrl+Shift+T`）可一键验证场景与后端，结果写入 `Logs/selftest.txt`。
 
 > 场景里只有一个空对象 `InspectionBootstrap`，挂着 `SceneBootstrap`。
 > 整个虚拟现场（地面/墙/机柜/桥架/控制台）和 UI 都是**运行时用代码生成**的，
@@ -242,63 +243,96 @@ npm run dev                   # http://localhost:5173
 | --- | --- | --- |
 | Go 后端（含重启持久化、CORS、参数校验） | `cd backend && go vet ./... && go test ./... -v` | `go vet` 无告警；**10 个测试函数 / 18 个用例全部通过** |
 | React 管理端（渲染/改状态/回滚/错误页/筛选） | `cd web && npm test` | **7 个测试全部通过** |
-| Unity（EditMode 单元测试） | Unity → Window → General → Test Runner → EditMode → Run All | 见 `unity/Assets/Tests/EditMode/`（约 40 个断言，含放置状态机与场景完整性） |
+| Unity Test Runner（EditMode） | 见下方命令 | **46 个用例全部通过** |
 
-`docs/` 目录里附了真实运行的证据：
+Unity 测试与自检都可以**命令行无人值守**执行（无需人工点 Play）：
+
+```bash
+# EditMode 单元测试（46 个用例）
+"C:\Program Files\Unity\Hub\Editor\6000.6.7f1\Editor\Unity.exe" ^
+  -batchmode -nographics -projectPath unity -runTests -testPlatform EditMode ^
+  -testResults docs/test-output/unity-editmode-results.xml
+
+# 场景自检：真实构建场景、真实物理射线、真实 HTTP（需先启动 Go 后端）
+"C:\Program Files\Unity\Hub\Editor\6000.6.7f1\Editor\Unity.exe" ^
+  -batchmode -projectPath unity ^
+  -executeMethod Inspection.EditorTools.InspectionSceneCheck.RunPlayModeSelfTest
+# 结果写入 unity/Logs/selftest.txt，并通过退出码反映成败
+```
+
+实测场景自检结果（`docs/test-output/unity-scene-selftest.txt`，全部通过）：
+
+```
+PASS  场景构建完成                    可点击表面 29 个
+PASS  屏幕中心射线命中表面            Pipe_3 @ (0.00, 0.97, -0.18)
+PASS  放置标记成功
+PASS  标记父节点坐标 = 精确命中点     (0.000, 0.967, -0.178)
+PASS  待提交状态已记录
+PASS  取消后移除未保存标记
+PASS  后端健康（/api/health 返回 ok:true）
+合计：通过 8，失败 0
+```
+
+其中“标记父节点坐标 = 精确命中点”这一项是在**真实的 Unity 物理系统**里断言的
+（`Physics.Raycast` 命中点与标记 transform 位置误差 < 1e-8），不是模拟值。
+
+`docs/unity-scene-preview.png` 是从 Unity 的 `Camera.Render()` 实拍的场景渲染图
+（1280×720，画面中可见机房、机柜与一个红色的高优先级标记）。
+
+`docs/` 目录里附了其他真实运行的证据：
 
 - `docs/backend-curl-session.txt`：健康检查、上报（201）、三类参数错误（400）、改状态（200）、404 的完整请求/响应。
 - `docs/backend-restart-persistence.txt`：停止服务 → 重启 → 逐条比对，数据完整保留。
 - `docs/admin-dashboard.png`：管理端实际渲染截图（Go 托管的生产构建）。
-- `docs/test-output/`：`go test -v`、`vitest`、Unity 逻辑验证的**原始输出**。
-- `docs/unity-verification/`：可复现的 Unity 逻辑验证工具（见下）。
-
-### 关于 Unity 代码的验证方式（重要）
-
-本机未安装 Unity 编辑器，因此我用 .NET 8 + 手写 UnityEngine 桩，**真实执行**了 `unity/Assets/Scripts`
-的业务逻辑与 uGUI 交互，共 **69 项断言**（含与真实 Go 后端联调的 6 项）：
-
-```bash
-# 可选：先启动 Go 后端，第 7 组联调才会通过（否则显示 SKIP）
-cd backend && go run .
-cd docs/unity-verification && dotnet run
-# -> 通过 69 项，失败 0 项
-```
-
-覆盖：射线命中点即上报坐标、一次点击只建一个待提交标记、取消后移除、
-空标题不请求后端、提交成功/失败提示、失败保留可重试、UI 点击不误放标记、
-历史标记越界跳过、标记颜色随状态变化、场景所有表面都有 Collider。
-
-这套工具在开发过程中抓到了两个**真机也会失败**的缺陷（见 `AI_LOG.md` P-010）：
-把 `GameObject` 当 `MonoBehaviour` 传参、以及 `IReadOnlyList<T>.Any()` 在 Unity 2022.3 下不可用。
-但它**不能替代在编辑器中实际运行**（渲染、真实物理与 EventSystem、字体），详见第 7 节。
+- `docs/test-output/`：`go test -v`、`vitest`、Unity EditMode 结果 XML、场景自检报告的**原始输出**。
 
 ---
 
 ## 7. 未完成 / 已知问题 / 取舍说明
 
-**必须先说明的一点**：本次交付是在 **没有 Unity 编辑器、没有 AR 设备**的环境中完成的
-（本机未安装 Unity Hub/Editor）。因此：
+### 7.1 已经验证到什么程度
 
-1. **Unity 工程未经真机/编辑器运行验证**。为弥补这一点，我做了三层可自动化的检查：
-   - 用 .NET 编译器 + 手写 Unity API 桩，对全部 Unity 脚本做**编译检查**（发现并修掉了
-     把 `GameObject` 当 `MonoBehaviour` 传参、以及 `IReadOnlyList<T>.Any()` 在 Unity 2022.3 下
-     不可用这两个真实缺陷）；
-   - 在 .NET 上**真实执行**业务逻辑与 uGUI 交互（69 项断言），覆盖「一次点击一个标记」、
-     「取消移除标记」、「提交成功/失败提示」、「UI 点击不误放」、「历史标记恢复」等；
-   - 让 Unity 的 `IssueApi` **直连真实 Go 服务**跑通 上报→改状态→再查询 的闭环（6 项断言）。
-   验证工具与原始输出都在仓库里（`docs/unity-verification/`、`docs/test-output/`），可复现。
-2. 因此 **演示视频需要你在装了 Unity 的机器上录制**（见第 8 节脚本）。
-   题目要求的两段 3–5 分钟视频目前**未提供**，这是本次交付最主要的缺口，我不会声称已完成。
-3. 其余可能影响体验的点：
-   - 首次打开 Unity 工程时，编辑器会重新生成 `.csproj`、`Library/`，并可能提示
-     “version upgrade”（2022.3.62f1 → 你本地的 2022.3.x），选择继续即可。
-   - UI 用的是 `LegacyRuntime.ttf`（Unity 2022.2+ 的内置字体名），若在 2021 版本打开需改为 `Arial.ttf`。
-   - 材质使用 `Unlit/Color`，不参与光照；美术效果不在考察范围内。
-   - 历史标记恢复只接受场景范围内的坐标（超出则跳过并在 Console 提示），
-     这是为了避免把 AR 的大坐标误当成室内坐标。
-   - 管理端轮询间隔 10 秒，不是实时推送（WebSocket 未做）。
-   - 无鉴权：内网演示工具定位，未做登录/权限。
-   - SQLite 单连接串行写入，足以应对单人巡检；高并发写入需要换 PostgreSQL。
+Unity 工程是在本机 **Unity 6000.6.7f1 中真实导入、编译、运行**过的：
+
+| 验证方式 | 结果 |
+| --- | --- |
+| Unity 导入 + 全量脚本编译 | 通过，**0 error / 0 warning** |
+| Unity Test Runner（EditMode） | **46 / 46 通过** |
+| 场景自检（真实物理射线 + 真实 HTTP） | **8 / 8 通过** |
+| 场景渲染实拍 | `docs/unity-scene-preview.png` |
+
+开发早期在没有 Unity 的情况下，我先用 .NET + 手写桩做了一版验证（工具保留在
+`docs/unity-verification/`，69 项断言）。后来的真实 Unity 运行证明这套桩**很有价值但不完备**：
+
+- 它抓到了 `GameObject` 当 `MonoBehaviour` 传参、`IReadOnlyList<T>.Any()` 不可用等真实缺陷；
+- 但它**没能发现** Unity 独有的两个问题（见 `AI_LOG.md` P-013）：
+  1. 编辑模式下 `Object.Destroy()` 会报错且不生效（标记的 Collider 没被移除、测试里标记没被真正删除）；
+  2. EditMode 测试里 `StartCoroutine` 的协程不会推进，必须用 `[UnityTest]` + `yield return null`。
+     ——这两类问题只有真实 Unity 环境才暴露得出来。
+
+### 7.2 仍未完成的部分
+
+1. **两段 3–5 分钟演示视频未提供**。本机没有录屏/剪辑工具，也无法代替你完成“人操作 + 解说”的演示。
+   第 8 节给了逐条脚本，`F10` 可以稳定复现提交动作，`F9` 可截图。这是本次交付**唯一的硬性缺口**，
+   我没有声称已完成。
+2. 命令行下只在**编辑模式**做了自检；批处理 + `-nographics` 进入播放模式时，Unity 会卡在
+   编辑器自身的 Search 数据库初始化（`ArgumentOutOfRangeException`，属 Unity 内部问题），
+   所以“播放模式下的人工交互”是通过第 8 节的脚本由人操作验证的。
+3. **未实现 AR Foundation / XR Simulation**：本题为无 AR 设备备选版，AR 部分只要求回答
+   README 第 5 节的三问（已完成）。放置逻辑已抽象为 `PlaceAt(worldPoint, worldNormal, surface)`，
+   将来接 AR 只需替换射线来源。
+
+### 7.3 其他已知问题与取舍
+
+- 首次用 Unity Hub 打开工程时会生成 `Library/`、`.csproj`（已在 `.gitignore` 中排除）。
+- UI 用 `LegacyRuntime.ttf`（Unity 2022.2+ 的内置字体），在更老版本需改为 `Arial.ttf`。
+- 材质使用 `Unlit/Color`，不参与光照；标记的可见性优先于画质。
+- 历史标记恢复只接受场景范围内的坐标（超出则跳过并在 Console 提示），
+  避免把 AR 的大坐标误当成室内坐标。
+- 管理端轮询间隔 10 秒，不是实时推送（WebSocket 未做）。
+- 无鉴权：内网演示工具定位，未做登录/权限。
+- SQLite 单连接串行写入，足以应对单人巡检；高并发写入需要换 PostgreSQL。
+- 后端 CORS 为 `*`，便于本地开发；上公网应改为白名单。
 
 **未做的加分项**：AR Foundation XR Simulation、Docker、Delete 之外的批量操作、地图热力图。
 
@@ -348,7 +382,7 @@ holocode-inspection/
 │       ├── components/              表格、状态/优先级徽章、详情侧栏
 │       ├── App.tsx                  列表、轮询、乐观更新、错误页
 │       └── App.test.tsx             7 个组件测试
-├── unity/                   Unity 2022.3 LTS 工程
+├── unity/                   Unity 6.6 LTS 工程
 │   └── Assets/
 │       ├── Scenes/Inspection.unity  只挂 SceneBootstrap 的空场景
 │       ├── Scripts/
@@ -365,3 +399,4 @@ holocode-inspection/
 ├── README.md
 ├── start.bat / start.sh     一键启动
 ```
+
