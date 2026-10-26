@@ -173,6 +173,245 @@ namespace Inspection.EditorTools
 
         /// <summary>最近一次报告（便于编辑器菜单读取）。</summary>
         public static string LastReport { get; private set; }
+        /// <summary>
+        /// 图形界面下用：打开场景、进播放模式，并在 1.5 秒后真实放置一个标记（走完整射线流程），
+        /// 让“上报问题”表单直接出现在屏幕上，便于人工确认输入框是否可见、是否被按钮遮挡。
+        /// </summary>
+        public static void OpenFormForInspection()
+        {
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            EditorApplication.isPlaying = true;
+            _inspectFrames = 0;
+            EditorApplication.update -= DriveOpenForm;
+            EditorApplication.update += DriveOpenForm;
+        }
+
+        private static int _inspectFrames;
+
+        private static void DriveOpenForm()
+        {
+            _inspectFrames++;
+            var placement = Object.FindAnyObjectByType<IssuePlacementController>();
+            if (placement == null || placement.SurfaceCount == 0) return;
+            if (_inspectFrames < 90) return;
+
+            EditorApplication.update -= DriveOpenForm;
+
+            var cam = Camera.main;
+            if (cam == null) { Debug.LogWarning("[Inspection] 找不到主相机"); return; }
+
+            var ray = new Ray(cam.transform.position, cam.transform.forward);
+            if (Physics.Raycast(ray, out var hit, 50f))
+            {
+                var composer = Object.FindAnyObjectByType<SceneComposer>();
+                var info = composer != null ? composer.Describe(hit.collider) : null;
+                if (info == null)
+                {
+                    info = new SurfaceInfo
+                    {
+                        deviceId = hit.collider.name,
+                        zone = "未分区",
+                        displayName = hit.collider.name,
+                        transform = hit.collider.transform
+                    };
+                }
+                placement.PlaceAt(hit.point, hit.normal, info);
+                Debug.Log($"[Inspection] 已放置标记并打开表单，命中 {hit.collider.name} @ {hit.point}");
+
+                var hud = Object.FindAnyObjectByType<InspectionHUD>();
+                if (hud != null) hud.DumpFormLayout();
+            }
+            else
+            {
+                Debug.LogWarning("[Inspection] 视线中心未命中任何物体");
+            }
+        }
+        /// <summary>
+        /// 渲染一张“表单已打开”的截图，用来人工确认输入框/按钮的排布没有重叠。
+        /// 输出到 Logs/form-preview.png。
+        /// </summary>
+        public static void CaptureFormPreview()
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // 相机 + 光
+            var camGo = new GameObject("Main Camera", typeof(Camera));
+            camGo.tag = "MainCamera";
+            var cam = camGo.GetComponent<Camera>();
+            cam.transform.position = new Vector3(0.68f, 1.65f, -4.4f);
+            cam.transform.LookAt(new Vector3(0.68f, 1.2f, -3.07f));
+            cam.fieldOfView = 68f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.06f, 0.07f, 0.09f);
+            cam.nearClipPlane = 0.03f;
+
+            var lightGo = new GameObject("Light", typeof(Light));
+            var light = lightGo.GetComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.0f;
+            light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+
+            var scene = new GameObject("Scene").AddComponent<SceneComposer>();
+            scene.Build();
+            Physics.SyncTransforms();
+
+            // HUD 并强制打开表单
+            var hudGo = new GameObject("HUD");
+            var hud = hudGo.AddComponent<InspectionHUD>();
+            hud.Configure(null, null, cam, "http://localhost:8080");
+            hud.BuildUIPublic();
+            hud.ForceOpenFormForPreview();
+
+            Canvas.ForceUpdateCanvases();
+
+            const int W = 1280, H = 720;
+            var rt = new RenderTexture(W, H, 24);
+            cam.targetTexture = rt;
+            cam.Render();
+
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(W, H, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, W, H), 0, 0);
+            tex.Apply();
+            RenderTexture.active = prev;
+            cam.targetTexture = null;
+
+            var dir = Path.Combine(ProjectRoot, "Logs");
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, "form-preview.png");
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Debug.Log("[Inspection] 表单截图已保存: " + path);
+            EditorApplication.Exit(0);
+        }
+        /// <summary>诊断：从玩家出生点朝前方做多条射线，看看默认视角能看到什么。</summary>
+
+        /// <summary>诊断 2：直接列出场景里所有带 Collider 的物体及其世界坐标包围盒，
+        /// 再从出生点向每个机柜面板做定向射线，确认到底能不能点中。</summary>
+        public static void DiagnoseColliders()
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var scene = new GameObject("Scene").AddComponent<SceneComposer>();
+            scene.Build();
+
+            // batchmode/编辑模式下 BoxCollider 的世界包围盒需要物理同步后才准确
+            Physics.SyncTransforms();
+            Canvas.ForceUpdateCanvases();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("=== 场景中所有 Collider（已 SyncTransforms）===");
+            foreach (var col in Object.FindObjectsByType<Collider>())
+            {
+                var b = col.bounds;
+                sb.AppendLine($"  {col.name,-22} center=({b.center.x,7:F2},{b.center.y,6:F2},{b.center.z,7:F2}) " +
+                              $"size=({b.size.x,5:F2},{b.size.y,5:F2},{b.size.z,5:F2})");
+            }
+
+            var spawn = new Vector3(0.68f, 1.65f, -4.4f);
+            sb.AppendLine();
+            sb.AppendLine($"=== 从出生点 {spawn} 向 A 排柜门(z=-3.07) 做定向射线 ===");
+            for (var x = -2.0f; x <= 2.01f; x += 0.5f)
+            {
+                var target = new Vector3(x, 1.2f, -2.6f); // A 排柜门中心附近
+                var dir = (target - spawn).normalized;
+                if (Physics.Raycast(spawn, dir, out var hit, 30f))
+                    sb.AppendLine($"  x={x,5:F1}  ->  {hit.distance,5:F2}m  {hit.collider.name}");
+                else
+                    sb.AppendLine($"  x={x,5:F1}  ->  (未命中)");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("=== 全方向扫描（每 30° yaw，pitch 0）===");
+            for (var yaw = 0; yaw < 360; yaw += 30)
+            {
+                var dir = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+                if (Physics.Raycast(spawn, dir, out var hit, 30f))
+                    sb.AppendLine($"  yaw={yaw,3}°  ->  {hit.distance,5:F2}m  {hit.collider.name}");
+                else
+                    sb.AppendLine($"  yaw={yaw,3}°  ->  (未命中)");
+            }
+
+            var path = Path.Combine(ProjectRoot, "Logs", "colliders.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? "Logs");
+            File.WriteAllText(path, sb.ToString());
+            Debug.Log("[Inspection] collider 诊断完成");
+            EditorApplication.Exit(0);
+        }        public static void DiagnoseSpawnView()
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var scene = new GameObject("Scene").AddComponent<SceneComposer>();
+            scene.Build();
+
+            var spawn = new Vector3(0.68f, 1.65f, -4.4f);
+            var report = new StringBuilder();
+            report.AppendLine($"出生点 (world): {spawn}");
+            report.AppendLine("从出生点朝 +Z（默认朝向前方）的射线命中：");
+
+            // 模拟相机 68° FOV 在 16:9 下的多角度采样
+            for (var i = -2; i <= 2; i++)
+            {
+                for (var j = -1; j <= 1; j++)
+                {
+                    // yaw=180 表示面向 -Z（正对 A 排柜门）
+                    var dir = Quaternion.Euler(j * 20f, 180f + i * 15f, 0f) * Vector3.forward;
+                    if (Physics.Raycast(spawn, dir, out var hit, 60f))
+                    {
+                        var info = scene.Describe(hit.collider);
+                        report.AppendLine($"  yaw={i * 15,4}° pitch={j * 20,4}°  ->  {hit.distance,6:F2}m  " +
+                                          $"{hit.collider.name}  [{info?.zone}/{info?.displayName}]");
+                    }
+                    else
+                    {
+                        report.AppendLine($"  yaw={i * 15,4}° pitch={j * 20,4}°  ->  (未命中)");
+                    }
+                }
+            }
+
+            var path = Path.Combine(ProjectRoot, "Logs", "spawn-view.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? "Logs");
+            File.WriteAllText(path, report.ToString());
+            Debug.Log("[Inspection] 出生点诊断\n" + report);
+            EditorApplication.Exit(0);
+        }
+        /// <summary>
+        /// 录制用：进入播放模式后自动跑一遍“点击 → 填表 → 提交”，
+        /// 等价于人手按 F10，但不需要真实的按键事件（无人值守录屏时用）。
+        ///   Unity.exe -projectPath unity -executeMethod Inspection.EditorTools.InspectionSceneCheck.AutoDemoForRecording
+        /// </summary>
+        public static void AutoDemoForRecording()
+        {
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            EditorApplication.isPlaying = true;
+            _demoFrames = 0;
+            EditorApplication.update -= DriveAutoDemo;
+            EditorApplication.update += DriveAutoDemo;
+        }
+
+        private static int _demoFrames;
+
+        private static void DriveAutoDemo()
+        {
+            _demoFrames++;
+            var diag = Object.FindAnyObjectByType<InspectionDiagnostics>();
+            var placement = Object.FindAnyObjectByType<IssuePlacementController>();
+
+            // 等场景装配完成后开始（约 2 秒），再给录制留出时间
+            if (diag == null || placement == null || placement.SurfaceCount == 0) return;
+            if (_demoFrames < 90) return;
+
+            EditorApplication.update -= DriveAutoDemo;
+            Debug.Log("[Inspection] 触发自动演示");
+            diag.RunAutoDemo();
+
+            // 结束录制由外部控制，这里不退出播放模式，方便人工继续操作
+        }
+        /// <summary>命令行/菜单入口：打开 Inspection 场景并停在编辑器里，方便人工检查与录制。</summary>
+        public static void OpenSceneForReview()
+        {
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            EditorApplication.delayCall += () => EditorApplication.isPlaying = true;
+            Debug.Log("[Inspection] 已打开场景并进入播放模式");
+        }
 
         /// <summary>
         /// 批处理入口：构建场景并渲染一张预览图到 Logs/scene-preview.png。
@@ -244,6 +483,20 @@ namespace Inspection.EditorTools
     }
 }
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

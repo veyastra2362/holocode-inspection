@@ -72,7 +72,26 @@ namespace Inspection
         /// 脚本化演示：等价于“左键点击机柜面板 → 输入标题 → 选择高优先级 → 提交”，
         /// 用于录屏时保证操作稳定、可重复。
         /// </summary>
-        private IEnumerator AutoDemo()
+        private bool _autoDemoRequested;
+
+        /// <summary>供编辑器/录屏脚本调用：启动自动演示。</summary>
+        public void RunAutoDemo()
+        {
+            _autoDemoRequested = true;
+        }
+
+        private void LateUpdate()
+        {
+            // 外部（编辑器脚本）只能设置标志，真正启动协程必须在 Update 里做，
+            // 否则会出现“协程宿主没有在运行”的时机问题。
+            if (_autoDemoRequested)
+            {
+                _autoDemoRequested = false;
+                StartCoroutine(AutoDemo());
+            }
+        }
+
+        public IEnumerator AutoDemo()
         {
             Debug.Log("[Diagnostics] 自动演示开始");
 
@@ -154,3 +173,5 @@ namespace Inspection
         }
     }
 }
+
+
