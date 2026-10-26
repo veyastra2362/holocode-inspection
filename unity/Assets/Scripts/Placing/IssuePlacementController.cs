@@ -60,6 +60,8 @@ namespace Inspection
         public event Action<string> ClickRejected;
         /// <summary>历史标记加载完成（从后端恢复）。</summary>
         public event Action<int> HistoryLoaded;
+        /// <summary>后端已删除的问题，其标记已从场景中移除（参数为移除数量）。</summary>
+        public event Action<int> MarkersRemoved;
         /// <summary>用户点击了一个已保存的标记（用于显示详情）。</summary>
         public event Action<IssueMarker> MarkerPicked;
 
@@ -365,36 +367,54 @@ namespace Inspection
                 yield break;
             }
 
-            var restored = RestoreMarkers(result.Data, out var skipped);
+            var restored = RestoreMarkers(result.Data, out var skipped, out var removed);
             HistoryLoaded?.Invoke(restored);
             if (skipped > 0)
             {
                 Debug.LogWarning($"[Placement] {skipped} 条问题的坐标不在当前场景范围内，已跳过标记恢复（数据仍保留在后端）");
             }
+            if (removed > 0)
+            {
+                Debug.Log($"[Placement] 后端已删除 {removed} 个问题，对应标记已从场景移除");
+                MarkersRemoved?.Invoke(removed);
+            }
+        }
+
+        /// <summary>兼容旧签名的重载（不关心被删除的数量）。</summary>
+        public int RestoreMarkers(IEnumerable<IssueData> issues, out int skipped)
+        {
+            return RestoreMarkers(issues, out skipped, out _);
         }
 
         /// <summary>
-        /// 按问题坐标恢复标记。
+        /// 按后端返回的问题列表「同步」场景中的标记：新增、就地刷新、并移除已删除的问题。
         /// 注意：只有坐标在场景范围内才恢复，否则会出现“标记飘到房间外面”的假象。
         /// 真实 AR 中问题更大——见 README 第 5 节。
         /// </summary>
-        public int RestoreMarkers(IEnumerable<IssueData> issues, out int skipped)
+        /// <param name="issues">后端返回的完整问题列表。</param>
+        /// <param name="skipped">坐标越界等原因被跳过的条数。</param>
+        /// <param name="removed">本次因后端已删除而被移除的标记数。</param>
+        public int RestoreMarkers(IEnumerable<IssueData> issues, out int skipped, out int removed)
         {
             skipped = 0;
+            removed = 0;
             var count = 0;
             if (issues == null)
             {
                 return 0;
             }
 
-            var existing = new HashSet<string>(StringComparer.Ordinal);
+            var existing = new Dictionary<string, IssueMarker>(StringComparer.Ordinal);
             foreach (var m in _savedMarkers)
             {
-                if (m != null && m.Issue != null)
+                if (m != null && m.Issue != null && !string.IsNullOrEmpty(m.Issue.id))
                 {
-                    existing.Add(m.Issue.id);
+                    existing[m.Issue.id] = m;
                 }
             }
+
+            // 记录后端这一次仍然存在的问题 id，用来判定哪些标记该被删除
+            var aliveIds = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var issue in issues)
             {
@@ -403,9 +423,19 @@ namespace Inspection
                     skipped++;
                     continue;
                 }
-                if (existing.Contains(issue.id))
+
+                aliveIds.Add(issue.id);
+
+                // 已存在则「就地刷新」而不是跳过：
+                // 管理端改了状态/标题后按 F5，标记必须重新着色并显示新状态，
+                // 否则用户会以为“改了没生效”。以前这里直接 continue，
+                // 导致 count 恒为 0，HUD 误报“后端暂无历史问题”。
+                if (existing.TryGetValue(issue.id, out var live) && live != null)
                 {
-                    continue; // 已存在，避免重复
+                    live.Bind(issue, true);
+                    live.ApplyIssueStyle();
+                    count++;
+                    continue;
                 }
 
                 var pos = issue.position.ToVector3();
@@ -426,6 +456,35 @@ namespace Inspection
                 _savedMarkers.Add(marker);
                 count++;
             }
+
+            // 后端已经不存在的问题，对应标记必须消失。
+            // 以前只做「新增 + 刷新」，管理端删除记录后按 F5，球会一直留在场景里。
+            for (var i = _savedMarkers.Count - 1; i >= 0; i--)
+            {
+                var m = _savedMarkers[i];
+                if (m == null || m.Issue == null)
+                {
+                    _savedMarkers.RemoveAt(i);
+                    continue;
+                }
+                if (aliveIds.Contains(m.Issue.id))
+                {
+                    continue;
+                }
+
+                if (ReferenceEquals(m, Pending?.Marker))
+                {
+                    continue; // 正在编辑的待提交标记不参与同步
+                }
+
+                _savedMarkers.RemoveAt(i);
+                if (m.gameObject != null)
+                {
+                    ObjectUtil.SafeDestroy(m.gameObject);
+                }
+                removed++;
+            }
+
             return count;
         }
 
