@@ -1,0 +1,80 @@
+== 1. JSON 扫描 / 信封解析 ==
+  PASS  取字符串值
+  PASS  取对象值
+  PASS  取数组值
+  PASS  不误取嵌套同名 key
+  PASS  字符串内花括号/转义不破坏结构
+  PASS  缺 key 返回 null
+  PASS  冒号前后空白
+  PASS  未闭合返回 null
+  PASS  错误信封解析
+  PASS  错误转可读文案
+  PASS  HTML 响应不当作 JSON
+== 2. 枚举与 URL 规范化 ==
+  PASS  优先级线上格式
+  PASS  状态线上格式
+  PASS  大小写不敏感解析
+  PASS  非法优先级被拒
+  PASS  URL 规范化 localhost:8080
+  PASS  URL 去尾斜杠
+  PASS  URL 空值用默认
+== 3. IssueApi 对真实 Go 风格响应的解析与错误处理 ==
+  PASS  创建成功解析 data
+  PASS  坐标解析正确
+  PASS  BaseUrl 被规范化
+  PASS  400 时展示后端 error 文案
+  PASS  400 时保留状态码
+  PASS  连接失败提示包含后端地址
+  PASS  非 JSON 响应给出可读错误
+  PASS  列表解析（顶层数组）
+    请求体示例: {"title":"1 号机柜温度异常","description":"右侧偏高","priority":"high","position":{"x":1.25,"y":0.8,"z":2.4}}
+== 4. 放置流程：一次点击一个标记 / 取消移除 / 提交 ==
+  PASS  第一次点击创建待提交标记
+  PASS  标记父节点 = 精确命中点
+  PASS  第二次点击不再创建标记
+  PASS  第二次点击给出提示
+  PASS  空标题被前端拦下且不请求后端
+  PASS  失败后标记保留
+  PASS  提交成功
+  PASS  请求体字段正确
+  PASS  请求体坐标 = 命中点
+  PASS  成功后待提交状态清空
+  PASS  成功后标记保留为已保存
+  PASS  取消后移除未保存标记
+  PASS  提交失败给出错误
+  PASS  提交失败保留标记以便重试
+  PASS  提交失败不进入已保存列表
+  PASS  历史恢复只接受场景内坐标
+  PASS  高优先级待处理标记偏红
+  PASS  已解决标记变绿
+== 5. 场景构建（Collider 覆盖率） ==
+  PASS  可点击表面 >= 2
+  PASS  所有表面都有 Collider
+  PASS  包含机柜
+  PASS  包含地面
+  PASS  机柜带编号与区域
+    表面 29 个，示例：全区域/地面(FLOOR) | 全区域/北墙(WALL-N) | 全区域/南墙(WALL-S) | 全区域/东墙(WALL-E) | 全区域/西墙(WALL-W) | A 区/A1 号机柜(CAB-A1)
+== 6. HUD 与真实后端闭环（用真实 Go 服务器响应） ==
+  PASS  射线命中机柜面板并放置标记
+  PASS  表单自动打开
+  PASS  HUD 画布与表单已构建
+  PASS  找到标题输入框
+  PASS  找到提交按钮
+  PASS  提交成功后提示包含“上报成功”
+  PASS  提交成功后表单关闭
+  PASS  提交成功后标记进入已保存列表
+  PASS  失败时提示包含“上报失败”与原因
+  PASS  失败时保留待提交标记
+  PASS  失败时表单保持打开
+  PASS  指针在 UI 上时点击不会放置/替换标记
+  PASS  UI 点击被拒绝并给出原因
+  PASS  后端不可用时给出明确提示
+== 7. 与真实 Go 后端联调（若已启动） ==
+  PASS  真实后端：创建问题成功
+  PASS  真实后端：返回 open 状态
+  PASS  真实后端：坐标往返一致
+  PASS  真实后端：修改状态成功
+  PASS  真实后端：状态变为 in_progress
+  PASS  真实后端：列表里能查回该问题且状态已更新
+
+通过 69 项，失败 0 项

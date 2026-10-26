@@ -1,0 +1,32 @@
+=== 1) 健康检查 ===
+{"data":{"issueCount":5,"status":"ok","version":"1.0.0"},"ok":true}
+
+=== 2) Unity 客户端上报（与 IssueApi 发出的请求体完全一致）===
+HTTP 201
+{"data":{"id":"iss_1793000000614_3a639617","title":"3 号机柜风扇异响","description":"靠近顶部风扇持续异响","priority":"high","status":"open","position":{"x":0.5,"y":1.1,"z":2},"createdAt":"2026-10-26T07:33:20.6148965Z","updatedAt":"2026-10-26T07:33:20.6148965Z"},"ok":true}
+
+=== 3) 参数校验（空标题 / 非法优先级 / 缺少坐标）===
+请求 {"title":"","priority":"urgent"}
+  -> HTTP 400 { "ok": false, "code": "BAD_REQUEST", "error": "title is required and must not be blank", "fields": { "position": "position is required, e.g. {\u0022x\u0022:1,\u0022y\u0022:0,\u0022z\u0022:2}", "priority": "priority must be one of \u0022low\u0022, \u0022medium\u0022, \u0022high\u0022", "title": "title is required and must not be blank" }}
+请求 {"title":"x","priority":"high"}
+  -> HTTP 400 { "ok": false, "code": "BAD_REQUEST", "error": "position is required, e.g. {\u0022x\u0022:1,\u0022y\u0022:0,\u0022z\u0022:2}", "fields": { "position": "position is required, e.g. {\u0022x\u0022:1,\u0022y\u0022:0,\u0022z\u0022:2}" }}
+请求 {"title":"x","postion":{"x":1}}
+  -> HTTP 400 { "ok": false, "code": "BAD_REQUEST", "error": "invalid JSON body: json: unknown field \u0022postion\u0022"}
+
+=== 4) 管理端修改状态（React 用的 PATCH）===
+HTTP 200
+{"data":{"id":"iss_1793000000614_3a639617","title":"3 号机柜风扇异响","description":"靠近顶部风扇持续异响","priority":"high","status":"in_progress","position":{"x":0.5,"y":1.1,"z":2},"createdAt":"2026-10-26T07:33:20.6148965Z","updatedAt":"2026-10-26T07:33:20.6723341Z"},"ok":true}
+
+=== 5) 非法状态 400 / 不存在 ID 404 ===
+  非法状态 -> HTTP 400 { "ok": false, "code": "BAD_REQUEST", "error": "status must be one of \u0022open\u0022, \u0022in_progress\u0022, \u0022resolved\u0022", "fields": { "status": "status must be one of \u0022open\u0022, \u0022in_progress\u0022, \u0022resolved\u0022" }}
+  不存在ID -> HTTP 404 { "ok": false, "code": "NOT_FOUND", "error": "issue not found"}
+
+=== 6) 列表（管理端与 Unity 共用同一份数据）===
+total=6
+  iss_1793000000614_3a639617   high     in_progress  (0.50, 1.10, 2.00)  3 号机柜风扇异响
+  iss_1792999984621_edd0a8ff   medium   resolved     (-3.00, 2.70, 0.00)  桥架固定卡扣脱落
+  iss_1792999984585_526635ad   high     open         (-1.80, 1.10, 0.50)  2 号配电柜门未关紧
+  iss_1792999984549_d66353b3   low      resolved     (0.60, 0.02, -2.20)  地面有少量积水
+  iss_1792999984511_8c0306a4   medium   in_progress  (-3.10, 1.90, 4.20)  B 区通道照明不亮
+  iss_1792999984455_ea3a7aef   high     open         (1.25, 0.80, 2.40)  1 号机柜温度异常
+

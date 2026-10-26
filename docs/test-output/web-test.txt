@@ -1,0 +1,10 @@
+
+ RUN  v2.1.9 D:/Code/面试/holocode-inspection/web
+
+ ✓ src/App.test.tsx (7 tests) 270ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  15:35:50
+   Duration  2.20s (transform 111ms, setup 219ms, collect 218ms, tests 270ms, environment 636ms, prepare 126ms)
+

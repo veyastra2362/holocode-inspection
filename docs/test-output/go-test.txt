@@ -1,0 +1,119 @@
+===== go vet =====
+
+===== go test -v =====
+=== RUN   TestHealth
+2026/10/26 15:35:48 GET /api/health -> 200 (67B, 0s)
+--- PASS: TestHealth (0.06s)
+=== RUN   TestCreateAndList
+2026/10/26 15:35:48 POST /api/issues -> 201 (294B, 1.581ms)
+2026/10/26 15:35:48 GET /api/issues -> 200 (306B, 0s)
+2026/10/26 15:35:48 GET /api/issues?status=resolved -> 200 (32B, 0s)
+--- PASS: TestCreateAndList (0.03s)
+=== RUN   TestValidation
+=== RUN   TestValidation/missing_title
+2026/10/26 15:35:48 POST /api/issues -> 400 (101B, 0s)
+=== RUN   TestValidation/blank_title
+2026/10/26 15:35:48 POST /api/issues -> 400 (145B, 0s)
+=== RUN   TestValidation/title_too_long
+2026/10/26 15:35:48 POST /api/issues -> 400 (139B, 0s)
+=== RUN   TestValidation/bad_priority
+2026/10/26 15:35:48 POST /api/issues -> 400 (176B, 0s)
+=== RUN   TestValidation/missing_position
+2026/10/26 15:35:48 POST /api/issues -> 400 (174B, 0s)
+=== RUN   TestValidation/null_position
+2026/10/26 15:35:48 POST /api/issues -> 400 (174B, 545µs)
+=== RUN   TestValidation/huge_coordinate
+2026/10/26 15:35:48 POST /api/issues -> 400 (180B, 0s)
+=== RUN   TestValidation/unknown_field_typo
+2026/10/26 15:35:48 POST /api/issues -> 400 (95B, 0s)
+2026/10/26 15:35:48 POST /api/issues -> 201 (246B, 1.568ms)
+2026/10/26 15:35:48 POST /api/issues -> 201 (596B, 2.112ms)
+--- PASS: TestValidation (0.03s)
+    --- PASS: TestValidation/missing_title (0.00s)
+    --- PASS: TestValidation/blank_title (0.00s)
+    --- PASS: TestValidation/title_too_long (0.00s)
+    --- PASS: TestValidation/bad_priority (0.00s)
+    --- PASS: TestValidation/missing_position (0.00s)
+    --- PASS: TestValidation/null_position (0.00s)
+    --- PASS: TestValidation/huge_coordinate (0.00s)
+    --- PASS: TestValidation/unknown_field_typo (0.00s)
+=== RUN   TestMalformedJSON
+2026/10/26 15:35:48 POST /api/issues -> 400 (78B, 0s)
+--- PASS: TestMalformedJSON (0.03s)
+=== RUN   TestStatusUpdate
+2026/10/26 15:35:48 POST /api/issues -> 201 (294B, 2.138ms)
+2026/10/26 15:35:48 PATCH /api/issues/iss_1793000148860_98ce5b7b -> 200 (301B, 1.568ms)
+2026/10/26 15:35:48 POST /api/issues/iss_1793000148860_98ce5b7b/status -> 200 (298B, 1.57ms)
+2026/10/26 15:35:48 PATCH /api/issues/iss_1793000148860_98ce5b7b -> 400 (190B, 0s)
+2026/10/26 15:35:48 PATCH /api/issues/does-not-exist -> 404 (58B, 0s)
+--- PASS: TestStatusUpdate (0.03s)
+=== RUN   TestDelete
+2026/10/26 15:35:48 POST /api/issues -> 201 (292B, 1.587ms)
+2026/10/26 15:35:48 DELETE /api/issues/iss_1793000148893_efdaa001 -> 200 (55B, 1.566ms)
+2026/10/26 15:35:48 GET /api/issues/iss_1793000148893_efdaa001 -> 404 (58B, 0s)
+2026/10/26 15:35:48 DELETE /api/issues/iss_1793000148893_efdaa001 -> 404 (58B, 0s)
+--- PASS: TestDelete (0.03s)
+=== RUN   TestPersistenceAcrossRestart
+2026/10/26 15:35:48 POST /api/issues -> 201 (294B, 2.108ms)
+2026/10/26 15:35:48 PATCH /api/issues/iss_1793000148925_4cf6535a -> 200 (298B, 2.138ms)
+2026/10/26 15:35:48 GET /api/issues -> 200 (310B, 0s)
+--- PASS: TestPersistenceAcrossRestart (0.04s)
+=== RUN   TestCORSPreflight
+--- PASS: TestCORSPreflight (0.03s)
+=== RUN   TestUnknownAPIReturnsJSON404
+2026/10/26 15:35:48 GET /api/nope -> 404 (74B, 0s)
+--- PASS: TestUnknownAPIReturnsJSON404 (0.03s)
+=== RUN   TestIDUniqueness
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.089ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (292B, 2.134ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.095ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.193ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (292B, 1.569ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.592ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.106ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.607ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.574ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (288B, 1.589ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (292B, 1.618ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.581ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.088ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.154ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.098ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.558ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (292B, 1.03ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (292B, 1.044ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.049ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.128ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.595ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.568ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.099ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.568ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.628ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.577ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.086ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.127ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (292B, 1.593ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.083ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 3.035ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.302ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.507ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.348ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.222ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.152ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.666ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.896ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.542ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.831ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.026ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.642ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.605ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.07ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.64ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.583ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.097ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 1.631ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (288B, 1.567ms)
+2026/10/26 15:35:49 POST /api/issues -> 201 (294B, 2.133ms)
+--- PASS: TestIDUniqueness (0.13s)
+PASS
+ok  	github.com/candidate/holocode-inspection/backend	0.555s
