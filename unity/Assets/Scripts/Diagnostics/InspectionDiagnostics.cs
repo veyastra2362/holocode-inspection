@@ -22,6 +22,9 @@ namespace Inspection
         [Tooltip("自检时用来“点击”的屏幕位置（默认屏幕中心）")]
         public Vector2 AutoClickScreenPos = new Vector2(0.5f, 0.5f);
 
+        /// <summary>最近一次自检的完整报告（供编辑器菜单/CI 读取）。</summary>
+        public string LastSelfTestReport { get; private set; }
+
         private string OutputDir => Path.Combine(Application.persistentDataPath, "Screenshots");
 
         public void Configure(IssuePlacementController placement, InspectionHUD hud, Camera cam)
@@ -111,7 +114,7 @@ namespace Inspection
             Check("放置控制器存在", Placement != null);
             Check("HUD 存在", Hud != null);
 
-            var composer = FindObjectOfType<SceneComposer>();
+            var composer = FindAnyObjectByType<SceneComposer>();
             Check("场景已构建", composer != null && composer.Surfaces.Count >= 2,
                 composer != null ? $"可点击表面 {composer.Surfaces.Count} 个" : "找不到 SceneComposer");
 
@@ -132,6 +135,7 @@ namespace Inspection
             sb.AppendLine();
             sb.AppendLine($"合计：通过 {ok}，失败 {fail}");
             var text = sb.ToString();
+            LastSelfTestReport = text;
             Debug.Log("[Diagnostics] 自检结果\n" + text);
 
             try

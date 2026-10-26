@@ -42,7 +42,7 @@ namespace Inspection
             sphere.name = "Core";
             sphere.transform.SetParent(transform, false);
             sphere.transform.localScale = Vector3.one * CoreRadius * 2f;
-            Object.Destroy(sphere.GetComponent<Collider>()); // 标记不参与射线命中，避免遮挡设备
+            ObjectUtil.SafeDestroy(sphere.GetComponent<Collider>()); // 标记不参与射线命中，避免遮挡设备
             _core = sphere.GetComponent<Renderer>();
             _core.sharedMaterial = CreateMarkerMaterial();
 
@@ -54,7 +54,7 @@ namespace Inspection
             pointer.transform.localPosition = _normal * 0.10f;
             // Cylinder 默认沿 Y 轴；转到法线方向
             pointer.transform.localRotation = Quaternion.FromToRotation(Vector3.up, _normal);
-            Object.Destroy(pointer.GetComponent<Collider>());
+            ObjectUtil.SafeDestroy(pointer.GetComponent<Collider>());
             _pointer = pointer.GetComponent<Renderer>();
             _pointer.sharedMaterial = CreateMarkerMaterial();
 
@@ -172,3 +172,5 @@ namespace Inspection
         }
     }
 }
+
+

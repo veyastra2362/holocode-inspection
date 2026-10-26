@@ -1,7 +1,13 @@
 {
   "name": "Inspection.Runtime",
   "rootNamespace": "Inspection",
-  "references": [],
+  "references": [
+    "UnityEngine.UI",
+    "UnityEngine.IMGUIModule",
+    "UnityEngine.ScreenCaptureModule",
+    "UnityEngine.PhysicsModule",
+    "UnityEngine.UnityWebRequestModule"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

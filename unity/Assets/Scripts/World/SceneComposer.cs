@@ -119,7 +119,7 @@ namespace Inspection
             {
                 var lamp = CreateBox("Lamp", new Vector3(0f, WallHeight - 0.1f, z),
                     new Vector3(3.2f, 0.06f, 0.5f), MakeMat(new Color(0.95f, 0.95f, 0.85f)));
-                Destroy(lamp.GetComponent<Collider>());
+                ObjectUtil.SafeDestroy(lamp.GetComponent<Collider>());
             }
         }
 
@@ -149,7 +149,7 @@ namespace Inspection
                 led.transform.SetParent(transform, true);
                 led.transform.position = new Vector3(x + 0.35f, height + 0.06f, z);
                 led.transform.localScale = Vector3.one * 0.08f;
-                Destroy(led.GetComponent<Collider>());
+                ObjectUtil.SafeDestroy(led.GetComponent<Collider>());
                 led.GetComponent<Renderer>().sharedMaterial = MakeMat(new Color(0.3f, 1f, 0.45f));
             }
         }
@@ -288,3 +288,5 @@ namespace Inspection
         }
     }
 }
+
+

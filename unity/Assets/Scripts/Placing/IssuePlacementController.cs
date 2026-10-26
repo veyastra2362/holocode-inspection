@@ -72,6 +72,9 @@ namespace Inspection
         private readonly List<IssueMarker> _savedMarkers = new List<IssueMarker>();
         public IReadOnlyList<IssueMarker> SavedMarkers => _savedMarkers;
 
+        /// <summary>当前场景里可点击表面的数量（0 表示场景还没构建完成）。</summary>
+        public int SurfaceCount => Composer != null && Composer.Surfaces != null ? Composer.Surfaces.Count : 0;
+
         private IIssueApi _api;
         private Transform _markerRoot;
 
@@ -243,7 +246,7 @@ namespace Inspection
 
             if (Pending.Root != null)
             {
-                Destroy(Pending.Root);
+                ObjectUtil.SafeDestroy(Pending.Root);
             }
             Pending = null;
             PendingCleared?.Invoke();
@@ -465,3 +468,4 @@ namespace Inspection
         }
     }
 }
+

@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Inspection.Tests
 {
@@ -165,8 +166,11 @@ namespace Inspection.Tests
             Assert.IsNotNull(_controller.Pending, "失败后标记应保留以便重试");
         }
 
-        [Test]
-        public void SuccessfulSubmitKeepsMarkerAndSendsExactPosition()
+        // 注意：Submit 内部会 StartCoroutine 发起网络请求，而 EditMode 下没有帧循环，
+        // 协程不会推进，必须用 [UnityTest] + yield return null 让它跑完。
+        // 这正是 Unity Test Runner 暴露出来的问题（见 AI_LOG P-013）。
+        [UnityTest]
+        public IEnumerator SuccessfulSubmitKeepsMarkerAndSendsExactPosition()
         {
             var point = new Vector3(1.25f, 0.8f, 2.4f);
             PlaceAt(point);
@@ -174,6 +178,7 @@ namespace Inspection.Tests
             ApiResult<IssueData> result = null;
             _controller.SubmitFinished += (r, _) => result = r;
             _controller.Submit("  1 号机柜温度异常  ", " 右侧偏高 ", IssuePriority.High);
+            yield return null;
 
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Success, result.ErrorMessage);
@@ -193,8 +198,8 @@ namespace Inspection.Tests
             Assert.AreEqual("iss_1", _controller.SavedMarkers[0].Issue.id);
         }
 
-        [Test]
-        public void FailedSubmitKeepsMarkerAndReportsError()
+        [UnityTest]
+        public IEnumerator FailedSubmitKeepsMarkerAndReportsError()
         {
             _api.FailCreate = true;
             _api.FailMessage = "无法连接后端 http://localhost:8080";
@@ -203,6 +208,7 @@ namespace Inspection.Tests
             ApiResult<IssueData> result = null;
             _controller.SubmitFinished += (r, _) => result = r;
             _controller.Submit("标题", "", IssuePriority.Low);
+            yield return null;
 
             Assert.IsNotNull(result);
             Assert.IsFalse(result.Success);
@@ -316,4 +322,6 @@ namespace Inspection.Tests
         }
     }
 }
+
+
 
