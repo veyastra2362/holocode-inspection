@@ -167,7 +167,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BackendUrl: http://localhost:8080
-  PlayerStart: {x: 0, y: 0, z: -7.5}
+  PlayerStart: {x: 0.68, y: 0, z: -4.4}
   PlayerStartYaw: 0
   AutoLoadHistory: 1
+
+
+
 

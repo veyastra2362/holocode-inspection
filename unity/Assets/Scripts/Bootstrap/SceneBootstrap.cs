@@ -25,8 +25,20 @@ namespace Inspection
         [Tooltip("Go 后端地址。留空则用 http://localhost:8080")]
         public string BackendUrl = IssueApi.DefaultBaseUrl;
 
-        [Header("玩家")]
-        public Vector3 PlayerStart = new Vector3(0f, 0f, -7.5f);
+        /// <summary>
+        /// 出生点。坐标要点：A 排机柜在 z=-2.6，柜门（Panel）朝 -Z 贴在 z=-3.07。
+        /// 所以要站在柜门的“正面”（z 更小的那一侧）并朝 +Z 看，才能正对柜门。
+        ///
+        /// 这里取 (0.68, 0, -4.4)：正对 A3 号机柜面板（面板中心 x=0.68），距离约 1.3m，
+        /// 开局视线中心就落在一个可点击柜面上 —— 单击必中，表单会直接弹出。
+        /// （x=0 时正好对着 A2/A3 两柜之间 0.25m 的缝隙，射线会从缝里穿过去打到远处地面。）
+        /// </summary>
+        public Vector3 PlayerStart = new Vector3(0.68f, 0f, -4.4f);
+
+        /// <summary>
+        /// 出生朝向（度）。0 = 面向 +Z。玩家在 z=-4.4、柜门在 z=-3.07（+Z 方向），
+        /// 面向 +Z 正好正对 A 排柜门；用 180 会背对机柜、直视空场。
+        /// </summary>
         public float PlayerStartYaw = 0f;
 
         [Header("运行时")]
@@ -128,12 +140,16 @@ namespace Inspection
 
         private IEnumerator StartupRoutine()
         {
+            Debug.Log($"[Bootstrap] StartupRoutine 开始，后端 = {_api?.BaseUrl}");
+
             // 等 HUD 完成 Start（构建界面、订阅事件）再发请求，确保提示能显示出来。
             yield return null;
 
             var done = false;
             System.Collections.Generic.List<IssueData> issues = null;
             string error = null;
+
+            Debug.Log("[Bootstrap] 开始请求历史问题");
 
             // 用列表接口做一次真实调用：既验证后端可达，又顺带拿到历史问题，省一次请求。
             yield return _api.FetchIssues(result =>
@@ -148,6 +164,8 @@ namespace Inspection
                     error = result.ErrorMessage;
                 }
             });
+
+            Debug.Log($"[Bootstrap] 请求返回 done={done} 条数={issues?.Count} error={error}");
 
             if (!done)
             {
@@ -164,9 +182,12 @@ namespace Inspection
 
             if (AutoLoadHistory && issues != null && issues.Count > 0)
             {
-                var restored = _placement.RestoreMarkers(issues, out var skipped);
+                var restored = _placement.RestoreMarkers(issues, out var skipped, out var removed);
+                Debug.Log($"[Bootstrap] 历史同步完成：后端 {issues.Count} 条，同步 {restored} 个标记，" +
+                          $"跳过 {skipped} 条，移除 {removed} 个已删除问题的标记");
                 _hud.ShowHistoryRestored(restored, skipped);
             }
         }
     }
 }
+
