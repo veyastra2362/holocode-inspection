@@ -1,0 +1,56 @@
+# ---- 构建产物 ----
+bin/
+build/
+*.exe
+web/dist/
+web/node_modules/
+node_modules/
+*.tsbuildinfo
+
+# ---- 运行时数据 ----
+data/
+backend/data/
+*.db
+*.db-shm
+*.db-wal
+
+# ---- 本地验证/临时文件（不属于交付内容）----
+.verify/
+.build/
+.tools/
+*.log
+
+# ---- Unity 自动生成目录（题目要求不上传）----
+unity/Library/
+unity/Temp/
+unity/Obj/
+unity/Logs/
+unity/Build/
+unity/Builds/
+unity/UserSettings/
+unity/MemoryCaptures/
+unity/Recordings/
+*.csproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+.vs/
+.idea/
+.vscode/
+
+# ---- 系统 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 保留 Unity 必需目录与配置（Assets / Packages / ProjectSettings 必须入库）
+!unity/Assets/
+!unity/Packages/
+!unity/Packages/manifest.json
+!unity/ProjectSettings/
