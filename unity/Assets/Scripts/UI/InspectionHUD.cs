@@ -104,6 +104,7 @@ namespace Inspection
             Placement.SubmitFinished += OnSubmitFinished;
             Placement.ClickRejected += OnClickRejected;
             Placement.HistoryLoaded += OnHistoryLoaded;
+            Placement.MarkersRemoved += OnMarkersRemoved;
             Placement.MarkerPicked += ShowMarkerDetail;
             Placement.HoverTargetChanged += (hit, surface) => RefreshHint(DescribeHover(hit, surface));
         }
@@ -120,6 +121,7 @@ namespace Inspection
             Placement.SubmitFinished -= OnSubmitFinished;
             Placement.ClickRejected -= OnClickRejected;
             Placement.HistoryLoaded -= OnHistoryLoaded;
+            Placement.MarkersRemoved -= OnMarkersRemoved;
             Placement.MarkerPicked -= ShowMarkerDetail;
         }
 
@@ -216,19 +218,27 @@ namespace Inspection
             ShowToast("· " + reason, WarnColor, 2.5f);
         }
 
+        /// <summary>后端已删除的问题：对应标记已从场景移除。</summary>
+        private void OnMarkersRemoved(int removed)
+        {
+            ShowToast($"已移除 {removed} 个标记（问题已在管理端删除）", WarnColor, 4f);
+        }
+
         private void OnHistoryLoaded(int count)
         {
             if (count < 0)
             {
-                ShowToast($"历史标记加载失败：{(_backendText != null ? "请检查后端" : "请检查后端")}", ErrColor, 5f);
+                ShowToast("历史标记加载失败：请检查后端是否已启动", ErrColor, 5f);
                 return;
             }
             if (count == 0)
             {
-                ShowToast("后端暂无历史问题", WarnColor, 3f);
+                // count==0 有两种可能：后端真的没有数据，或这次没有新增/变化的标记。
+                // 不能一律说“后端暂无历史问题”（之前就是这么写错的，会误导用户以为数据丢了）。
+                ShowToast("已从后端刷新，没有新的历史问题", WarnColor, 3f);
                 return;
             }
-            ShowToast($"已从后端恢复 {count} 个历史标记", OkColor, 4f);
+            ShowToast($"已从后端同步 {count} 个历史标记（状态已更新）", OkColor, 4f);
         }
 
         // ================= 表单 =================
@@ -583,40 +593,63 @@ namespace Inspection
 
         private void BuildFormPanel()
         {
+            // 面板尺寸集中定义，下面所有子控件都按“距上边多少”统一切分，
+            // 避免再出现正负号搞反导致的重叠/压扁。
+            const float panelHeight = 430f;
+            const float baseInset = 12f;
+            var cursorTop = 12f; // 当前插入点距面板上边的距离
+
             var rt = NewPanel("FormPanel", _canvas.transform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
-                new Vector2(1f, 0.5f), new Vector2(-16, 0), new Vector2(420, 430), PanelBg);
+                new Vector2(1f, 0.5f), new Vector2(-16, 0), new Vector2(420, panelHeight), PanelBg);
             _formPanel = rt.gameObject;
 
+            /// 从当前插入点向下切出高度为 height 的一块区域，并把插入点再下移 gapAfter。
+            /// 返回 (bottom, top)：两者都是「距底边的距离」，top = bottom + height，
+            /// 正好对应 SetRect 的 bottom/top 参数。
+            (float bottom, float top) Slice(float height, float gapAfter = 4f)
+            {
+                var bottom = panelHeight - cursorTop - height;
+                var top = bottom + height;
+                cursorTop += height + gapAfter;
+                return (bottom, top);
+            }
+
+            // 标题区
             var title = NewText("FormTitle", rt, "上报问题", 18, Color.white);
-            title.rectTransform.offsetMax = new Vector2(-12, -12);
-            title.rectTransform.offsetMin = new Vector2(12, 390);
+            var r1 = Slice(26f);
+            SetRect(title.rectTransform, baseInset, r1.bottom, baseInset, r1.top);
 
             _formTargetText = NewText("Target", rt, "", 13, new Color(0.70f, 0.82f, 0.95f));
-            _formTargetText.rectTransform.offsetMax = new Vector2(-12, -54);
-            _formTargetText.rectTransform.offsetMin = new Vector2(12, 352);
+            var r2 = Slice(22f, 6f);
+            SetRect(_formTargetText.rectTransform, baseInset, r2.bottom, baseInset, r2.top);
 
-            // 标题输入
+            // 标题标签 + 输入框
             var titleLabel = NewText("TitleLabel", rt, "标题（必填）", 14, new Color(0.80f, 0.84f, 0.90f));
-            titleLabel.rectTransform.offsetMax = new Vector2(-12, -84);
-            titleLabel.rectTransform.offsetMin = new Vector2(12, 330);
+            var r3 = Slice(20f, 2f);
+            SetRect(titleLabel.rectTransform, baseInset, r3.bottom, baseInset, r3.top);
 
             _titleField = NewInputField("TitleField", rt, 120, "例如：3 号机柜温度异常", false);
-            SetRect(_titleField.GetComponent<RectTransform>(), new Vector2(12, 296), new Vector2(-12, 330));
+            var r4 = Slice(32f, 12f);
+            SetRect(_titleField.GetComponent<RectTransform>(), baseInset, r4.bottom, baseInset, r4.top);
 
+            // 描述标签 + 输入框
             var descLabel = NewText("DescLabel", rt, "描述（可选）", 14, new Color(0.80f, 0.84f, 0.90f));
-            descLabel.rectTransform.offsetMax = new Vector2(-12, -176);
-            descLabel.rectTransform.offsetMin = new Vector2(12, 238);
+            var r5 = Slice(20f, 2f);
+            SetRect(descLabel.rectTransform, baseInset, r5.bottom, baseInset, r5.top);
 
             _descField = NewInputField("DescField", rt, 200, "补充现场情况（最多 2000 字）", true);
-            SetRect(_descField.GetComponent<RectTransform>(), new Vector2(12, 100), new Vector2(-12, 234));
+            var r6 = Slice(96f, 12f);
+            SetRect(_descField.GetComponent<RectTransform>(), baseInset, r6.bottom, baseInset, r6.top);
 
+            // 优先级
             _priorityLabel = NewText("PriorityLabel", rt, "优先级：中", 14, new Color(0.80f, 0.84f, 0.90f));
-            _priorityLabel.rectTransform.offsetMax = new Vector2(-12, -290);
-            _priorityLabel.rectTransform.offsetMin = new Vector2(12, 68);
+            var r7 = Slice(20f, 2f);
+            SetRect(_priorityLabel.rectTransform, baseInset, r7.bottom, baseInset, r7.top);
 
             var prRow = new GameObject("PriorityRow", typeof(RectTransform));
             prRow.transform.SetParent(rt, false);
-            SetRect(prRow.GetComponent<RectTransform>(), new Vector2(12, 40), new Vector2(-12, 68));
+            var prRect = Slice(30f, 8f);
+            SetRect(prRow.GetComponent<RectTransform>(), baseInset, prRect.bottom, baseInset, prRect.top);
             var hl = prRow.AddComponent<HorizontalLayoutGroup>();
             hl.spacing = 8;
             hl.childForceExpandWidth = true;
@@ -635,13 +668,26 @@ namespace Inspection
                 _priorityButtons.Add((b, pr));
             }
 
+            // 坐标（只读）—— 紧贴在按钮行正上方
             _coordinateText = NewText("Coord", rt, "", 13, new Color(0.70f, 0.76f, 0.84f));
-            _coordinateText.rectTransform.offsetMax = new Vector2(-12, -318);
-            _coordinateText.rectTransform.offsetMin = new Vector2(12, 40);
+            var r8 = Slice(22f, 4f);
+            SetRect(_coordinateText.rectTransform, baseInset, r8.bottom, baseInset, r8.top);
 
+            // 底部按钮行：固定在距底 8px、高 30px
             var actions = new GameObject("Actions", typeof(RectTransform));
             actions.transform.SetParent(rt, false);
-            SetRect(actions.GetComponent<RectTransform>(), new Vector2(12, 8), new Vector2(-12, 36));
+            const float actionHeight = 30f;
+            const float actionBottom = 8f;
+            // 注意：SetRect 的第 4 个参数是“距顶距离”，即距底 = actionBottom + actionHeight。
+            // 之前误传 panelHeight - actionBottom - actionHeight（=392），按钮行被拉成横跨整个面板。
+            const float actionTop = actionBottom + actionHeight;
+            SetRect(actions.GetComponent<RectTransform>(), baseInset, actionBottom, baseInset, actionTop);
+
+            // 断言：坐标文字与按钮行不得重叠（这是本轮修掉的真实缺陷，留作回归保护）
+            var coordBottom = r8.bottom;
+            Debug.Assert(coordBottom >= actionTop,
+                $"[HUD] 表单布局错误：坐标文字底部({coordBottom}) 与按钮行顶部({actionTop}) 重叠");
+
             var ahl = actions.AddComponent<HorizontalLayoutGroup>();
             ahl.spacing = 8;
             ahl.childForceExpandWidth = true;
@@ -698,12 +744,89 @@ namespace Inspection
             return field;
         }
 
-        private static void SetRect(RectTransform rt, Vector2 offsetMin, Vector2 offsetMax)
+        /// <summary>
+        /// 按“距左、距右、距底、距底再向上多少”摆放一个拉伸控件。
+        ///
+        /// 这里刻意不使用“距顶”，因为 offsetMax.y 必须写成负数，一旦调用方把
+        /// 正数传进来，就会出现“底高于顶”、高度为负（控件被压扁）或高度异常放大
+        /// （控件横跨整个面板）——这正是本轮修掉的两个真实缺陷。
+        /// 现在四个参数全部是“越靠内越大”的正值，内部统一换算：
+        ///   offsetMin = (left, bottom)
+        ///   offsetMax = (-right, -(面板高 - top))，其中 top 是距底距离。
+        /// </summary>
+        private static void SetRect(RectTransform rt, float left, float bottom, float right, float top)
         {
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
-            rt.offsetMin = offsetMin;
-            rt.offsetMax = offsetMax;
+            rt.offsetMin = new Vector2(left, bottom);
+            rt.offsetMax = new Vector2(-right, top - rt.parent.GetComponent<RectTransform>().rect.height);
+        }
+
+        /// <summary>仅测试用：在 EditMode 下显式构建 UI（正常运行时由 Start() 调用）。</summary>
+        public void BuildUIPublic()
+        {
+            EnsureEventSystem();
+            BuildUI();
+        }
+
+        /// <summary>仅预览用：构造一个待提交标记并打开表单，方便截图检查布局。</summary>
+        public void ForceOpenFormForPreview()
+        {
+            var marker = new PendingMarker
+            {
+                Root = new GameObject("PreviewMarker"),
+                HitPoint = new Vector3(0.68f, 1.24f, -3.07f),
+                HitNormal = Vector3.forward,
+                Surface = new SurfaceInfo
+                {
+                    deviceId = "CAB-A3-P",
+                    zone = "A 区",
+                    displayName = "A3 号机柜面板"
+                }
+            };
+            OpenForm(marker);
+        }
+
+        /// <summary>把表单内所有控件的实际屏幕矩形打印出来（人工核对是否重叠/被遮挡）。</summary>
+        public void DumpFormLayout()
+        {
+            if (_formPanel == null)
+            {
+                Debug.Log("[FormDump] 表单尚未构建");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            var canvasRt = _canvas.GetComponent<RectTransform>();
+            sb.AppendLine($"[FormDump] 画布 {canvasRt.rect.width:F0}x{canvasRt.rect.height:F0}，表单是否激活={_formPanel.activeSelf}");
+
+            var formRt = _formPanel.GetComponent<RectTransform>();
+            var formCorners = new Vector3[4];
+            formRt.GetWorldCorners(formCorners);
+            sb.AppendLine($"[FormDump] 面板 screenRect: x={formCorners[0].x:F0}..{formCorners[2].x:F0} " +
+                          $"y={formCorners[0].y:F0}..{formCorners[1].y:F0}");
+
+            void Dump(string label, RectTransform rt)
+            {
+                if (rt == null)
+                {
+                    sb.AppendLine($"[FormDump] {label,-14} <null>");
+                    return;
+                }
+                var c = new Vector3[4];
+                rt.GetWorldCorners(c);
+                sb.AppendLine($"[FormDump] {label,-14} x={c[0].x:F0}..{c[2].x:F0}  y={c[0].y:F0}..{c[1].y:F0}  " +
+                              $"w={c[2].x - c[0].x:F0} h={c[1].y - c[0].y:F0}  active={rt.gameObject.activeInHierarchy}");
+            }
+
+            Dump("TitleField", _titleField != null ? _titleField.GetComponent<RectTransform>() : null);
+            Dump("DescField", _descField != null ? _descField.GetComponent<RectTransform>() : null);
+            Dump("PriorityRow", _formPanel.transform.Find("PriorityRow") as RectTransform);
+            Dump("Coord", _coordinateText != null ? _coordinateText.rectTransform : null);
+            Dump("Actions", _formPanel.transform.Find("Actions") as RectTransform);
+            Dump("SubmitBtn", _submitButton != null ? _submitButton.GetComponent<RectTransform>() : null);
+
+            Debug.Log(sb.ToString());
         }
 
         /// <summary>供测试/自动化读取当前提示文字。</summary>
@@ -770,14 +893,14 @@ namespace Inspection
 
         private bool _backendOk;
 
-        /// <summary>启动时恢复历史标记的结果反馈。</summary>
+        /// <summary>启动/刷新时恢复历史标记的结果反馈。</summary>
         public void ShowHistoryRestored(int restored, int skipped)
         {
             if (restored <= 0 && skipped <= 0)
             {
                 return;
             }
-            var msg = $"已恢复 {restored} 个历史标记";
+            var msg = $"已同步 {restored} 个历史标记";
             if (skipped > 0)
             {
                 msg += $"（{skipped} 条坐标不在当前场景范围，已跳过）";
@@ -828,3 +951,8 @@ namespace Inspection
         }
     }
 }
+
+
+
+
+

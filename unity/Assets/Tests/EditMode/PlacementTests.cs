@@ -226,7 +226,7 @@ namespace Inspection.Tests
                 new IssueData { id = "out", title = "AR 真实世界坐标", priority = "low", status = "open", position = new PositionData(new Vector3(3245000f, 12f, 1400000f)) }
             };
 
-            var restored = _controller.RestoreMarkers(issues, out var skipped);
+            var restored = _controller.RestoreMarkers(issues, out var skipped, out _);
 
             Assert.AreEqual(1, restored);
             Assert.AreEqual(1, skipped);
@@ -240,8 +240,8 @@ namespace Inspection.Tests
             {
                 new IssueData { id = "x", title = "t", priority = "medium", status = "open", position = new PositionData(new Vector3(0, 1, 0)) }
             };
-            _controller.RestoreMarkers(issues, out _);
-            _controller.RestoreMarkers(issues, out _);
+            _controller.RestoreMarkers(issues, out _, out _);
+            _controller.RestoreMarkers(issues, out _, out _);
 
             Assert.AreEqual(1, _controller.SavedMarkers.Count, "同一问题不应重复生成标记");
         }
@@ -320,8 +320,186 @@ namespace Inspection.Tests
                     $"{s.displayName} 没有 Collider，射线无法命中");
             }
         }
+
+        // ---------- HUD 表单布局 ----------
+        // 回归保护：曾经出现过 SetRect 的 offsetMax 传成正数，
+        // 导致标题输入框高度变负（被压扁）、坐标文字与“提交/取消”按钮行重叠，
+        // 用户根本看不到也点不到输入框。这里直接用真实布局矩形做断言。
+
+        [UnityTest]
+        public IEnumerator FormLayoutHasNoOverlapsAndPositiveHeights()
+        {
+            var hudGo = new GameObject("HUD");
+            var hud = hudGo.AddComponent<InspectionHUD>();
+            hud.Configure(null, null, null, "http://localhost:8080");
+            // EditMode 下 MonoBehaviour.Start 不会自动执行，这里显式构建 UI
+            hud.BuildUIPublic();
+            yield return null;
+
+            var panel = FindChild(hudGo.transform, "FormPanel");
+            Assert.IsNotNull(panel, "找不到 FormPanel");
+
+            var titleField = FindChild(panel.transform, "TitleField");
+            var descField = FindChild(panel.transform, "DescField");
+            var coord = FindChild(panel.transform, "Coord");
+            var actions = FindChild(panel.transform, "Actions");
+
+            Assert.IsNotNull(titleField, "找不到标题输入框");
+            Assert.IsNotNull(descField, "找不到描述输入框");
+            Assert.IsNotNull(coord, "找不到坐标文字");
+            Assert.IsNotNull(actions, "找不到按钮行");
+
+            // 注意：RectTransform 是拉伸锚点，(0,0)-(1,1)，所以 rect.y 是“相对自身锚点”的，
+            // 不能直接比较。统一换算成“距面板底边”，才是可比较的坐标系。
+            var panelH = panel.GetComponent<RectTransform>().rect.height;
+            var title = ToPanelCoords(titleField.GetComponent<RectTransform>(), panelH);
+            var desc = ToPanelCoords(descField.GetComponent<RectTransform>(), panelH);
+            var coordBox = ToPanelCoords(coord.GetComponent<RectTransform>(), panelH);
+            var actionBox = ToPanelCoords(actions.GetComponent<RectTransform>(), panelH);
+
+            // 1) 输入框必须有正的高度，并且足够高能看清文字
+            Assert.Greater(title.height, 20f,
+                $"标题输入框高度异常（{title.height}），会被压扁到看不见");
+            Assert.Greater(desc.height, 40f,
+                $"描述输入框高度异常（{desc.height}）");
+
+            // 2) 标题框与描述框不得重叠（标题在描述上方，故标题底部应高于描述顶部）
+            Assert.GreaterOrEqual(title.bottom, desc.top - 0.01f,
+                $"标题输入框(底={title.bottom}) 与描述输入框(顶={desc.top}) 重叠");
+
+            // 3) 坐标文字不得与底部按钮行重叠 —— 本轮修掉的真实缺陷
+            Assert.Greater(coordBox.bottom, actionBox.top,
+                $"坐标文字(底={coordBox.bottom}) 与按钮行(顶={actionBox.top}) 重叠");
+
+            // 4) 按钮行必须是正常高度，不能横跨整个面板
+            Assert.LessOrEqual(actionBox.height, 60f,
+                $"按钮行高度异常（{actionBox.height}），应当只有一行按钮那么高");
+
+            // 5) 所有控件都要落在面板内
+            foreach (var (name, box) in new[]
+                     {
+                         ("TitleField", title), ("DescField", desc), ("Coord", coordBox), ("Actions", actionBox)
+                     })
+            {
+                Assert.GreaterOrEqual(box.bottom, -0.01f, $"{name} 超出面板底部");
+                Assert.LessOrEqual(box.top, panelH + 0.01f, $"{name} 超出面板顶部");
+            }
+
+            Object.DestroyImmediate(hudGo);
+        }
+
+        /// <summary>把拉伸锚点控件的 rect 换算成“距面板底边”的区间。</summary>
+        private static (float bottom, float top, float height) ToPanelCoords(RectTransform rt, float panelHeight)
+        {
+            // offsetMin.y 就是距底距离；offsetMax.y 为负，表示距顶距离
+            var bottom = rt.offsetMin.y;
+            var top = panelHeight + rt.offsetMax.y;
+            return (bottom, top, top - bottom);
+        }
+
+        private static GameObject FindChild(Transform root, string name)
+        {
+            for (var i = 0; i < root.childCount; i++)
+            {
+                var child = root.GetChild(i);
+                if (child.name == name) return child.gameObject;
+                var deep = FindChild(child, name);
+                if (deep != null) return deep;
+            }
+            return null;
+        }
+
+        // ---------- 状态同步 ----------
+        // 回归保护：管理端把问题改成「已解决」后，按 F5 刷新，Unity 里的标记必须变色。
+        // 以前 RestoreMarkers 遇到已存在的 id 直接 continue，导致：
+        //   1) 标记从不刷新，状态改了也看不出来；
+        //   2) 返回值恒为 0，HUD 误报“后端暂无历史问题”。
+
+        private class CoroutineHost : MonoBehaviour { }
+
+        [Test]
+        public void RestoringExistingIssueRefreshesStatusColorInsteadOfSkipping()
+        {
+            _go = new GameObject("Placement");
+            var placement = _go.AddComponent<IssuePlacementController>();
+            var host = new GameObject("Host");
+            placement.ConfigureDependencies(null, null, null, host.AddComponent<CoroutineHost>());
+
+            var issue = new IssueData
+            {
+                id = "iss_same",
+                title = "机柜温度异常",
+                priority = "high",
+                status = "open",
+                position = new PositionData { x = 0f, y = 1f, z = 0f }
+            };
+
+            // 第一次恢复：新建标记
+            var first = placement.RestoreMarkers(new[] { issue }, out var skipped1, out _);
+            Assert.AreEqual(1, first, "首次恢复应创建 1 个标记");
+            Assert.AreEqual(0, skipped1);
+            Assert.AreEqual(1, placement.SavedMarkers.Count);
+
+            var marker = placement.SavedMarkers[0];
+            var openColor = marker.CurrentColor;
+
+            // 管理端把状态改成 resolved，再刷新一次
+            issue.status = "resolved";
+            var second = placement.RestoreMarkers(new[] { issue }, out var skipped2, out _);
+
+            Assert.AreEqual(1, second,
+                "已存在的标记被刷新时也要计入返回值，否则 HUD 会误报“后端暂无历史问题”");
+            Assert.AreEqual(0, skipped2);
+            Assert.AreEqual(1, placement.SavedMarkers.Count, "不应产生重复标记");
+
+            Assert.AreNotEqual(openColor, marker.CurrentColor,
+                "状态从 open 改成 resolved 后，标记颜色必须变化");
+            Assert.AreEqual("resolved", marker.Issue.status, "标记上的问题数据应被更新");
+
+            Object.DestroyImmediate(host);
+            Object.DestroyImmediate(_go);
+            _go = null;
+        }
+
+        // ---------- 删除同步 ----------
+        // 回归保护：管理端删除问题后按 F5，Unity 里的标记必须消失。
+        // 以前 RestoreMarkers 只做「新增 + 刷新」，从不删除，
+        // 已删除问题的标记会一直留在场景里（球不消失）。
+
+        [Test]
+        public void RestoringAfterBackendDeletionRemovesOrphanedMarker()
+        {
+            _go = new GameObject("Placement");
+            var placement = _go.AddComponent<IssuePlacementController>();
+            var host = new GameObject("Host");
+            placement.ConfigureDependencies(null, null, null, host.AddComponent<CoroutineHost>());
+
+            var a = new IssueData
+            {
+                id = "iss_a", title = "机柜温度异常", priority = "high", status = "open",
+                position = new PositionData { x = 0f, y = 1f, z = 0f }
+            };
+            var b = new IssueData
+            {
+                id = "iss_b", title = "地面有积水", priority = "low", status = "open",
+                position = new PositionData { x = 2f, y = 0.1f, z = 1f }
+            };
+
+            placement.RestoreMarkers(new[] { a, b }, out _, out var removed0);
+            Assert.AreEqual(2, placement.SavedMarkers.Count);
+            Assert.AreEqual(0, removed0, "首次同步不应移除任何标记");
+
+            // 管理端删掉了 iss_a，后端只剩 iss_b
+            var count = placement.RestoreMarkers(new[] { b }, out _, out var removed1);
+
+            Assert.AreEqual(1, removed1, "已删除问题的标记应被移除");
+            Assert.AreEqual(1, placement.SavedMarkers.Count, "场景里只应剩下未删除的那一个标记");
+            Assert.AreEqual("iss_b", placement.SavedMarkers[0].Issue.id);
+            Assert.AreEqual(1, count, "仍存在的问题应计入同步数量");
+
+            Object.DestroyImmediate(host);
+            Object.DestroyImmediate(_go);
+            _go = null;
+        }
     }
 }
-
-
-
